@@ -116,28 +116,243 @@ Each layer connects to the next via **weights** and outputs via **activation fun
 
 ## 4. Activation Functions
 
-After computing the weighted sum of inputs, we pass the result through an **activation function**. This introduces **non-linearity** — allowing the network to learn complex patterns.
+
+##  What is an Activation Function?
+
+An **activation function** is a **mathematical gate** inside a neural network that decides:
+
+* **Whether a neuron should "fire" or not**
+* **How much signal to pass to the next layer**
+* **How the network introduces non-linearity**
 
 ---
 
-###  Analogy: Decision Threshold
+###  Why Do We Need Activation Functions?
 
-> Imagine a person deciding whether to attend a party. If it’s a sunny day **AND** they’re in a good mood, they go.
-> You don’t want a rigid rule — you want **flexibility**. Activation functions allow neurons to make **soft, flexible decisions**.
-
----
-
-###  Common Activation Functions
-
-| Function                         | Output Range | Description                                 | When Used                |
-| -------------------------------- | ------------ | ------------------------------------------- | ------------------------ |
-| **Sigmoid**                      | 0 to 1       | Smooth curve; "squashes" values             | Binary classification    |
-| **Tanh**                         | -1 to 1      | Like sigmoid but centered                   | Better for centered data |
-| **ReLU (Rectified Linear Unit)** | 0 to ∞       | Passes positive values, zeros out negatives | Most common today        |
+Without activation functions, a neural network becomes **just a linear equation**, no matter how many layers it has. That means it **can’t learn complex patterns**, like images, speech, or language.
 
 ---
 
-###  Visualizing Activation Functions
+###  Example (Without Activation):
+
+Let’s say:
+
+$$
+z = w_1x_1 + w_2x_2 + b
+$$
+
+If every layer just applies this equation (without an activation), you're **stacking linear layers**, and that’s still linear.
+
+> **Linear + Linear = Linear**
+
+---
+
+###  With Activation:
+
+$$
+a = \text{activation}(z)
+$$
+
+Now, your model can model **non-linear relationships**, like:
+
+* If income is high **AND** credit score is low → reject loan
+* If image has two eyes **AND** nose shape = round → it’s a cat
+
+---
+
+###  Analogy: Light Dimmer Switch
+
+> A neuron is like a light bulb.
+>
+> * Without activation → the light is either **fully on or off**.
+> * With activation → you get **dimming control**, adjusting brightness based on input.
+>   It allows neurons to express **how strongly they’re activated**.
+
+---
+
+##  Types of Activation Functions
+
+Let’s go through the **most common activation functions** in detail:
+
+---
+
+## 1. Sigmoid (Logistic Function)
+
+### Formula:
+
+$$
+\sigma(z) = \frac{1}{1 + e^{-z}}
+$$
+
+###  Output Range:
+
+* Between **0 and 1**
+
+###  Use Case:
+
+* Binary classification (outputting probabilities)
+
+###  Intuition:
+
+* Large positive input → Output near 1
+* Large negative input → Output near 0
+* Middle values (z ≈ 0) → Output near 0.5
+
+---
+
+###  Analogy: Confidence Gauge
+
+> Like a **yes/no decision** with uncertainty.
+>
+> * If you're 100% confident → Output ≈ 1
+> * If you're unsure → Output ≈ 0.5
+> * If you're completely against → Output ≈ 0
+
+---
+
+###  Downsides:
+
+* **Vanishing gradients**: for large or small `z`, gradient becomes close to zero → slows down training
+* Not zero-centered (can cause oscillations)
+
+---
+
+## 2. Tanh (Hyperbolic Tangent)
+
+###  Formula:
+
+$$
+\tanh(z) = \frac{e^z - e^{-z}}{e^z + e^{-z}}
+$$
+
+### Output Range:
+
+* Between **-1 and 1**
+
+###  Use Case:
+
+* When you want **centered outputs** (good for optimization)
+
+---
+
+###  Analogy: Mood Scale
+
+> * -1 = "Very Sad"
+> * 0 = "Neutral"
+> * +1 = "Very Happy"
+
+Like a **sentiment dial** that gives both **positive and negative** feedback.
+
+---
+
+### Advantages:
+
+* Zero-centered → helps optimization
+* Stronger gradients than sigmoid
+
+###  Downsides:
+
+* Still suffers from **vanishing gradients** at extreme ends
+
+---
+
+## 3. ReLU (Rectified Linear Unit)
+
+###  Formula:
+
+$$
+f(z) = \max(0, z)
+$$
+
+###  Output Range:
+
+* From **0 to ∞**
+
+###  Use Case:
+
+* Hidden layers of deep networks
+
+---
+
+###  Intuition:
+
+* If input is **positive**, pass it through
+* If input is **negative**, output **0**
+
+---
+
+### Analogy: One-Way Gate
+
+> Think of ReLU like a **one-way valve**:
+>
+> * If water pressure is strong (positive z), it flows freely
+> * If pressure is negative (backflow), the valve shuts it down
+
+---
+
+###  Advantages:
+
+* Computationally efficient (just max)
+* Helps with **sparse activation** (some neurons off → efficient)
+* No vanishing gradient for z > 0
+
+###  Downsides:
+
+* **Dying ReLU Problem**: Some neurons can get stuck and never activate again (always output 0)
+
+---
+
+## 4. Leaky ReLU
+
+###  Formula:
+
+$$
+f(z) = \begin{cases}
+z & \text{if } z > 0 \\
+\alpha z & \text{if } z \le 0
+\end{cases}
+$$
+
+Where `α` is a small number (e.g. 0.01)
+
+### Use Case:
+
+* Prevents dying ReLU by allowing **a small negative slope**
+
+---
+
+###  Analogy: Emergency Exit
+
+> Think of it like a ReLU, but with a **small escape door** — if input is negative, a small signal still gets through.
+
+---
+
+## 5. Softmax (for Multiclass Classification)
+
+### Formula:
+
+$$
+\text{softmax}(z_i) = \frac{e^{z_i}}{\sum_j e^{z_j}}
+$$
+
+###  Output:
+
+* Converts raw scores into **probabilities that sum to 1**
+
+###  Use Case:
+
+* Final layer in **multiclass classification** (e.g., digit recognition 0–9)
+
+---
+
+###  Analogy: Election Votes
+
+> Each class gets some **"votes"** (exponentiated score), and softmax distributes them into **probabilities**.
+> The class with the **most votes** wins, but you also see how close the others were.
+
+---
+
+## 🔬 Visualization of Functions
 
 ```python
 import numpy as np
@@ -147,18 +362,42 @@ x = np.linspace(-10, 10, 100)
 sigmoid = 1 / (1 + np.exp(-x))
 tanh = np.tanh(x)
 relu = np.maximum(0, x)
+leaky_relu = np.where(x > 0, x, 0.01 * x)
 
 plt.figure(figsize=(10, 6))
 plt.plot(x, sigmoid, label='Sigmoid')
 plt.plot(x, tanh, label='Tanh')
 plt.plot(x, relu, label='ReLU')
+plt.plot(x, leaky_relu, label='Leaky ReLU')
+plt.title("Activation Functions")
 plt.legend()
-plt.title('Activation Functions')
 plt.grid(True)
 plt.show()
 ```
 
 ---
+
+##  Comparison Table
+
+| Function   | Output Range    | Pros                      | Cons                | Use Case                 |
+| ---------- | --------------- | ------------------------- | ------------------- | ------------------------ |
+| Sigmoid    | (0, 1)          | Good for probabilities    | Vanishing gradients | Binary classification    |
+| Tanh       | (-1, 1)         | Zero-centered             | Still vanishes      | Regression tasks         |
+| ReLU       | \[0, ∞)         | Fast, efficient, sparse   | Dying neurons       | Hidden layers            |
+| Leaky ReLU | (-∞, ∞)         | Fixes ReLU’s death        | Still heuristic     | Deep nets                |
+| Softmax    | (0 to 1, sum=1) | Converts to probabilities | None                | Final layer (multiclass) |
+
+---
+
+##  Final Takeaways
+
+* Use **ReLU** in hidden layers (fast, simple, works well)
+* Use **Sigmoid** or **Softmax** in output layers (depending on the task)
+* Understand how **activation functions unlock the power** of deep networks by enabling non-linear learning
+
+---
+
+
 
 ## 5. Forward Pass Intuition
 
